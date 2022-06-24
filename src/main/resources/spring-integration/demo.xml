@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-sftp="http://www.springframework.org/schema/integration/sftp"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/integration
+        http://www.springframework.org/schema/integration/spring-integration.xsd
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/integration/sftp 
+        http://www.springframework.org/schema/integration/sftp/spring-integration-sftp.xsd
+    ">
+
+	<!-- Trigger de l'interface -->
+	<int:inbound-channel-adapter 
+		channel="defaultChannel" 
+		expression="'trigger'">
+		<int:poller cron="*/5 * * * * *" />
+	</int:inbound-channel-adapter>
+
+	<int-sftp:outbound-gateway id="getSftpFile"
+		request-channel="defaultChannel"
+		session-factory="sftpSessionFactory"
+		command="get"
+		command-options="-stream"
+		reply-timeout="15000"
+		expression="'WrongFileName'">
+	</int-sftp:outbound-gateway>
+
+	<bean id="sftpSessionFactory"
+		class="org.springframework.integration.file.remote.session.CachingSessionFactory">
+		<constructor-arg ref="defaultSftpSessionFactory" />
+		<property name="poolSize" value="${application.sftp.pool-size}"/>
+        <property name="sessionWaitTimeout" value="${application.sftp.session-timeout}"/>
+        <property name="testSession" value="true"/>
+	</bean>
+
+	<bean id="defaultSftpSessionFactory" 
+		class="org.springframework.integration.sftp.session.DefaultSftpSessionFactory">
+		<property name="host" value="${application.sftp.host}" />
+		<property name="port" value="${application.sftp.port}" />
+		<property name="user" value="${application.sftp.user}" />
+		<property name="password" value="${application.sftp.password}" />
+		<property name="allowUnknownKeys" value="true" />
+	</bean>
+
+</beans>

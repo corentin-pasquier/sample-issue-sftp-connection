@@ -1,0 +1,8 @@
+application:
+  sftp:
+    host: localhost
+    port: 22
+    user: foo
+    password: pass
+    pool-size: 5
+    session-timeout: 15000
